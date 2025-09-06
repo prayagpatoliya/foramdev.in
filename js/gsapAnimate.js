@@ -320,8 +320,11 @@
     var loader = function () {
         var innerBars = document.querySelectorAll(".inner-bar");
         var increment = 0;
+        var finished = false;
+
         function animateBars() {
-            for (var i = 0; i < 2; i++) {
+            var barsToAnimate = Math.min(2, innerBars.length - increment);
+            for (var i = 0; i < barsToAnimate; i++) {
                 var randomWidth = Math.floor(Math.random() * 101);
                 gsap.to(innerBars[i + increment], {
                     width: randomWidth + "%",
@@ -331,7 +334,7 @@
             }
 
             setTimeout(function () {
-                for (var i = 0; i < 2; i++) {
+                for (var i = 0; i < barsToAnimate; i++) {
                     gsap.to(innerBars[i + increment], {
                         width: "100%",
                         duration: 0.5,
@@ -339,11 +342,12 @@
                     });
                 }
 
-                increment += 2;
+                increment += barsToAnimate;
 
                 if (increment < innerBars.length) {
                     animateBars();
-                } else {
+                } else if (!finished) {
+                    finished = true;
                     var preloaderTL = gsap.timeline();
                     preloaderTL.to(".preloader", {
                         "--preloader-clip": "100%",
@@ -358,11 +362,15 @@
             }, 200);
         }
 
+        function hidePreloaderFallback() {
+            $(".preloader").css("display", "none").remove();
+        }
+
+        // Always remove preloader after 3.5s, regardless of load event
+        setTimeout(hidePreloaderFallback, 3500);
+
         $(window).on("load", function () {
             animateBars();
-            setTimeout(function () {
-                $(".preloader").remove();
-            }, 3000);
         });
     };
 
